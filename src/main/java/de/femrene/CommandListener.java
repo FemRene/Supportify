@@ -2,7 +2,6 @@ package de.femrene;
 
 import de.femrene.config.ConfigReader;
 import de.femrene.config.ConfigWriter;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -17,6 +16,7 @@ import java.util.HashMap;
 public class CommandListener extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+        event.deferReply(true).queue();
         switch (event.getName()) {
             case "addsupport":
                 Role sup = event.getOption("suprole").getAsRole();
@@ -37,14 +37,13 @@ public class CommandListener extends ListenerAdapter {
                 supSections.put(event.getOption("supcategory").getAsString(), category.getId());
                 supRole.put(event.getOption("supcategory").getAsString(), sup.getId());
                 adminRole.put(event.getOption("supcategory").getAsString(), admin.getId());
-                System.out.println(supSections);
                 Member member = event.getMember();
                 if (member.hasPermission(Permission.ADMINISTRATOR)) {
                     new ConfigWriter(event.getGuild().getId()+".section", supSections.toString());
                     new ConfigWriter(event.getGuild().getId()+".sup", supRole.toString());
                     new ConfigWriter(event.getGuild().getId()+".admin", adminRole.toString());
                     event.getChannel().sendMessageEmbeds(MessageCreator.createTicketEmbed()).setActionRow(MessageCreator.createTicketButtons(toHashMap(ConfigReader.getString(event.getGuild().getId()+".section")))).queue();
-                    event.getHook().sendMessage("Channel created").setEphemeral(true).queue();
+                    event.getHook().sendMessage("Support section created").setEphemeral(true).queue();
                 } else {
                     event.getHook().sendMessage("You do not have permission to use this command!").setEphemeral(true).queue();
                 }
